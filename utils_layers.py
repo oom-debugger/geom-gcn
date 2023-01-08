@@ -162,7 +162,8 @@ class GeomGCNSingleChannel(nn.Module):
 
         for i in range(self.num_divisions):
             subgraph = self.g.edge_subgraph(self.subgraph_edge_list_of_list[i])
-            subgraph.copy_from_parent()
+#            copy_from_parent is useless in newer dgl version: https://discuss.dgl.ai/t/copying-subgraph-features-to-parent-in-dgl0-5-0/1223
+#            subgraph.copy_from_parent()
             subgraph.ndata[f'Wh_{i}'] = self.linear_for_each_division[i](subgraph.ndata['h']) * subgraph.ndata['norm']
             subgraph.update_all(message_func=fn.copy_u(u=f'Wh_{i}', out=f'm_{i}'),
                                 reduce_func=fn.sum(msg=f'm_{i}', out=f'h_{i}'))
