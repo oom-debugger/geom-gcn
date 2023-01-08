@@ -202,6 +202,7 @@ def load_data(dataset_name, splits_file_path=None, train_percentage=None, val_pe
     norm[th.isinf(norm)] = 0
     if device:
         norm = norm.to(th.device(device))
+        g = g.to(th.device(device))
     g.ndata['norm'] = norm.unsqueeze(1)
 
     return g, features, labels, train_mask, val_mask, test_mask, num_features, num_labels
