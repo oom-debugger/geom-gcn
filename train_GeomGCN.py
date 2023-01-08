@@ -33,6 +33,8 @@ import torch.nn.functional as F
 
 import utils_data
 from utils_layers import GeomGCNNet
+from riemannian.optimizer.radam import RiemannianAdam
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -55,6 +57,11 @@ if __name__ == '__main__':
     parser.add_argument('--dataset_split', type=str)
     parser.add_argument('--learning_rate_decay_patience', type=int, default=50)
     parser.add_argument('--learning_rate_decay_factor', type=float, default=0.8)
+
+    parser.add_argument('--optimizer', type=str, default='adam')
+    parser.add_argument('--c', type=float, default=None)
+    parser.add_argument('--scale', type=float, default=None)
+
     args = parser.parse_args()
     vars(args)['model'] = 'GeomGCN_TwoLayers'
 
@@ -76,11 +83,23 @@ if __name__ == '__main__':
                      layer_one_ggcn_merge=args.layer_one_ggcn_merge,
                      layer_one_channel_merge=args.layer_one_channel_merge,
                      layer_two_ggcn_merge=args.layer_two_ggcn_merge,
-                     layer_two_channel_merge=args.layer_two_channel_merge)
+                     layer_two_channel_merge=args.layer_two_channel_merge,
+#                     curvature=args.c,
+#                     scale=args.scale,
+                     )
 
-    optimizer = th.optim.Adam([{'params': net.geomgcn1.parameters(), 'weight_decay': args.weight_decay_layer_one},
+    if args.optimizer == 'adam':
+        optimiser_cls = th.optim.Adam
+    elif args.optimizer == 'radam':
+        optimiser_cls = RiemannianAdam
+
+    else:
+        raise NotImplementedError('%s optimiser has not been implemented!' % args.optimizer)
+
+    optimizer = optimiser_cls([{'params': net.geomgcn1.parameters(), 'weight_decay': args.weight_decay_layer_one},
                                {'params': net.geomgcn2.parameters(), 'weight_decay': args.weight_decay_layer_two}],
                               lr=args.learning_rate)
+    
     learning_rate_scheduler = th.optim.lr_scheduler.ReduceLROnPlateau(optimizer=optimizer,
                                                                       factor=args.learning_rate_decay_factor,
                                                                       patience=args.learning_rate_decay_patience)

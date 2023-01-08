@@ -25,6 +25,8 @@ import torch as th
 import torch.nn as nn
 import torch.nn.functional as F
 
+from riemannian.manifolds.poincare import PoincareBall
+
 
 # Adapted from https://docs.dgl.ai/tutorials/models/1_gnn/1_gcn.html
 class GCNSingleHead(nn.Module):
@@ -236,7 +238,9 @@ class GeomGCNNet(nn.Module):
     def __init__(self, g, num_input_features, num_output_classes, num_hidden, num_divisions, num_heads_layer_one,
                  num_heads_layer_two,
                  dropout_rate, layer_one_ggcn_merge, layer_one_channel_merge, layer_two_ggcn_merge,
-                 layer_two_channel_merge):
+                 layer_two_channel_merge,
+                 curvature=None,
+                 scale=1):
         super(GeomGCNNet, self).__init__()
         self.geomgcn1 = GeomGCN(g, num_input_features, num_hidden, num_divisions, F.relu, num_heads_layer_one,
                                 dropout_rate,
@@ -257,7 +261,16 @@ class GeomGCNNet(nn.Module):
                                 num_heads_layer_two, dropout_rate, layer_two_ggcn_merge, layer_two_channel_merge)
         self.g = g
 
+        self.c = curvature
+        self.scale = scale
+        if self.c:
+            print ('Hyperbolic Normalization is applied to the model with curevature {%s} and scale {%s}' % (self.c, self.scale))
+
     def forward(self, features):
         x = self.geomgcn1(features)
         x = self.geomgcn2(x)
+        ############################################################
+        if self.c:
+            h_new = self.scale * PoincareBall.proj(PoincareBall.expmap0(PoincareBall.proj_tan0(h_new, self.c), c=self.c), c=self.c)
+        ############################################################
         return x
