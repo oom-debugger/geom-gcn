@@ -68,16 +68,16 @@ if __name__ == '__main__':
     device_name = None
     if th.cuda.is_available():
         available_gpus = [th.cuda.device(i) for i in range(th.cuda.device_count())]
-        device_name = 'cuda:%s' % available_gpus[0]
+        device_name = 'cuda:%s' % available_gpus[0].idx
     print ('GPU device name is (%s)' % device_name)
     
     t1 = time.time()
     if args.dataset_split == 'jknet':
         g, features, labels, train_mask, val_mask, test_mask, num_features, num_labels = utils_data.load_data(
-            args.dataset, None, 0.6, 0.2, 'GeomGCN', args.dataset_embedding, device_name)
+            args.dataset, None, 0.6, 0.2, 'GeomGCN', args.dataset_embedding, device=device_name)
     else:
         g, features, labels, train_mask, val_mask, test_mask, num_features, num_labels = utils_data.load_data(
-            args.dataset, args.dataset_split, None, None, 'GeomGCN', args.dataset_embedding, device_name)
+            args.dataset, args.dataset_split, None, None, 'GeomGCN', args.dataset_embedding, device=device_name)
     print(time.time() - t1)
 
     g.set_n_initializer(dgl.init.zero_initializer)
