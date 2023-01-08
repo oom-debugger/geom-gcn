@@ -65,13 +65,19 @@ if __name__ == '__main__':
     args = parser.parse_args()
     vars(args)['model'] = 'GeomGCN_TwoLayers'
 
+    device_name = None
+    if th.cuda.is_available():
+        available_gpus = [th.cuda.device(i) for i in range(th.cuda.device_count())]
+        device_name = 'cuda:%s' % available_gpus[0]
+    print ('GPU device name is (%s)' % device_name)
+    
     t1 = time.time()
     if args.dataset_split == 'jknet':
         g, features, labels, train_mask, val_mask, test_mask, num_features, num_labels = utils_data.load_data(
-            args.dataset, None, 0.6, 0.2, 'GeomGCN', args.dataset_embedding)
+            args.dataset, None, 0.6, 0.2, 'GeomGCN', args.dataset_embedding, device_name)
     else:
         g, features, labels, train_mask, val_mask, test_mask, num_features, num_labels = utils_data.load_data(
-            args.dataset, args.dataset_split, None, None, 'GeomGCN', args.dataset_embedding)
+            args.dataset, args.dataset_split, None, None, 'GeomGCN', args.dataset_embedding, device_name)
     print(time.time() - t1)
 
     g.set_n_initializer(dgl.init.zero_initializer)
@@ -105,12 +111,13 @@ if __name__ == '__main__':
                                                                       patience=args.learning_rate_decay_patience)
     writer = tensorboardX.SummaryWriter(logdir=f'runs/{args.model}_{args.run_id}')
 
-    net.cuda()
-    features = features.cuda()
-    labels = labels.cuda()
-    train_mask = train_mask.cuda()
-    val_mask = val_mask.cuda()
-    test_mask = test_mask.cuda()
+    if device_name:
+        net.cuda()
+        features = features.cuda()
+        labels = labels.cuda()
+        train_mask = train_mask.cuda()
+        val_mask = val_mask.cuda()
+        test_mask = test_mask.cuda()
 
     # Adapted from https://github.com/PetarV-/GAT/blob/master/execute_cora.py
     patience = args.num_epochs_patience

@@ -35,7 +35,8 @@ import utils
 
 def load_data(dataset_name, splits_file_path=None, train_percentage=None, val_percentage=None, embedding_mode=None,
               embedding_method=None,
-              embedding_method_graph=None, embedding_method_space=None):
+              embedding_method_graph=None, embedding_method_space=None,
+              device=None):
     if dataset_name in {'cora', 'citeseer', 'pubmed'}:
         adj, features, labels, _, _, _ = utils.load_data(dataset_name)
         labels = np.argmax(labels, axis=-1)
@@ -199,6 +200,8 @@ def load_data(dataset_name, splits_file_path=None, train_percentage=None, val_pe
     degs = g.in_degrees().float()
     norm = th.pow(degs, -0.5).cuda()
     norm[th.isinf(norm)] = 0
+    if device:
+        norm = norm.to(th.device(device))
     g.ndata['norm'] = norm.unsqueeze(1)
 
     return g, features, labels, train_mask, val_mask, test_mask, num_features, num_labels
