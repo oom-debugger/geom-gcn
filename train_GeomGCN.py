@@ -84,8 +84,8 @@ if __name__ == '__main__':
                      layer_one_channel_merge=args.layer_one_channel_merge,
                      layer_two_ggcn_merge=args.layer_two_ggcn_merge,
                      layer_two_channel_merge=args.layer_two_channel_merge,
-#                     curvature=args.c,
-#                     scale=args.scale,
+                     curvature=args.c,
+                     scale=args.scale,
                      )
 
     if args.optimizer == 'adam':
