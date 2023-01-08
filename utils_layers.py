@@ -168,7 +168,7 @@ class GeomGCNSingleChannel(nn.Module):
             subgraph.update_all(message_func=fn.copy_u(u=f'Wh_{i}', out=f'm_{i}'),
                                 reduce_func=fn.sum(msg=f'm_{i}', out=f'h_{i}'))
             subgraph.ndata.pop(f'Wh_{i}')
-            subgraph.copy_to_parent()
+#            subgraph.copy_to_parent()
 
         self.g.ndata.pop('h')
         
