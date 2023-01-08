@@ -272,6 +272,6 @@ class GeomGCNNet(nn.Module):
         x = self.geomgcn2(x)
         ############################################################
         if self.c:
-            h_new = self.scale * PoincareBall.proj(PoincareBall.expmap0(PoincareBall.proj_tan0(h_new, self.c), c=self.c), c=self.c)
+            x = self.scale * PoincareBall.proj(PoincareBall.expmap0(PoincareBall.proj_tan0(x, self.c), c=self.c), c=self.c)
         ############################################################
         return x
